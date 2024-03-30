@@ -106,8 +106,8 @@ export default function CardWithPicture({ tutorial }) {
     return timestamp.toDate().toDateString();
   };
   const firebaseProjectId = import.meta.env.VITE_APP_FIREBASE_PROJECT_ID;
-  const imagePath = tutorial?.featured_image; // Assuming this is the path to your image
-  const imageUrl = `http://localhost:9199/v0/b/${firebaseProjectId}.appspot.com/o/${imagePath}?alt=media`
+  const imagePath = tutorial?.featured_image; 
+  const imageUrl = `http://localhost:9199/v0/b/${firebaseProjectId}.appspot.com/o/${imagePath}?alt=media`;
   console.log("Firebase Project ID:", firebaseProjectId);
   console.log("Image Path:", imagePath);
   console.log("Image URL:", imageUrl);
@@ -117,7 +117,7 @@ export default function CardWithPicture({ tutorial }) {
       <Link to={`/tutorial/${tutorial?.tutorial_id}`}>
         <CardMedia
           className={classes.media}
-          image={imagePath ?imagePath:cardImage}
+          image={imagePath ? imagePath : cardImage}
           title="code"
           data-testId="Image"
         />
