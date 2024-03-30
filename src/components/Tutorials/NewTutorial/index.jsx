@@ -41,6 +41,7 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [visible, setVisible] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [formValue, setformValue] = useState({
@@ -103,14 +104,14 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
   const orgList =
     allowOrgs > 0
       ? organizations
-          .map((org, i) => {
-            if (org.permissions.includes(3) || org.permissions.includes(2)) {
-              return org;
-            } else {
-              return null;
-            }
-          })
-          .filter(Boolean)
+        .map((org, i) => {
+          if (org.permissions.includes(3) || org.permissions.includes(2)) {
+            return org;
+          } else {
+            return null;
+          }
+        })
+        .filter(Boolean)
       : null;
 
   useEffect(() => {
@@ -123,7 +124,8 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
       ...formValue,
       created_by: userHandle,
       is_org: userHandle !== formValue.owner,
-      completed: false
+      completed: false,
+      featured_image: imageUrl
     };
     console.log(tutorialData);
     createTutorial(tutorialData)(firebase, firestore, dispatch, history);
@@ -143,6 +145,20 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
       ...prev,
       [name]: value
     }));
+  };
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Assuming you have initialized firebase and firestore
+    const storageRef = firebase.storage().ref();
+    const fileRef = storageRef.child(`images/${file.name}`);
+
+    await fileRef.put(file);
+    const imageUrl = await fileRef.getDownloadURL();
+    console.log("hello +123 ",imageUrl);
+
+    setImageUrl(imageUrl);
   };
 
   const classes = useStyles();
@@ -226,9 +242,15 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
             style={{ marginBottom: "2rem" }}
           />
 
-          <IconButton>
+          <IconButton onClick={() => document.getElementById('imageInput').click()}>
             <ImageIcon />
           </IconButton>
+          <input
+            type="file"
+            id="imageInput"
+            style={{ display: 'none' }}
+            onChange={handleImageUpload}
+          />
           <IconButton>
             <MovieIcon />
           </IconButton>
