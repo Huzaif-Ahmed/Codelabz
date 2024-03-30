@@ -38,6 +38,7 @@ if (import.meta.env.VITE_APP_USE_EMULATOR) {
   });
   firebase.database().useEmulator("localhost", 9000);
   firebase.functions().useEmulator("localhost", 5001);
+  firebase.storage().useEmulator("localhost", 9199);
   db.settings({
     // experimentalForceLongPolling: true, !! Not necessary.
     merge: true
