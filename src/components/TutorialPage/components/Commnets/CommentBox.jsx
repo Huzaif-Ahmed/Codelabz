@@ -45,12 +45,13 @@ const CommentBox = ({ commentsArray, tutorialId }) => {
     };
     let x = await addComment(commentData)(firebase, firestore, dispatch);
     console.log("new id ", x);
-    console.log(comments.length)
+    // console.log(comments.length)
     setComments(prevComments => [...prevComments, x]);
   };
 
   useEffect(() => {
-    setComments(commentsArray?.slice(0, currCommentCount));
+    setComments(commentsArray===undefined?[]:commentsArray?.slice(0, currCommentCount));
+    console.log("commentsarray",commentsArray);
   }, [currCommentCount, commentsArray]);
 
   console.log(commentsArray, comments, currCommentCount);
