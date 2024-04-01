@@ -45,6 +45,7 @@ const CommentBox = ({ commentsArray, tutorialId }) => {
     };
     let x = await addComment(commentData)(firebase, firestore, dispatch);
     console.log("new id ", x);
+    console.log(comments.length)
     setComments(prevComments => [...prevComments, x]);
   };
 
