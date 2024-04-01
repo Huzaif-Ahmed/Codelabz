@@ -35,7 +35,7 @@ const CommentBox = ({ commentsArray, tutorialId }) => {
   const dispatch = useDispatch();
   const [comments, setComments] = useState([]);
   const [currCommentCount, setCurrCommentCount] = useState(3);
-  const handleSubmit = comment => {
+  const handleSubmit = async comment => {
     const commentData = {
       content: comment,
       replyTo: tutorialId,
@@ -43,11 +43,15 @@ const CommentBox = ({ commentsArray, tutorialId }) => {
       createdAt: firestore.FieldValue.serverTimestamp(),
       userId: "codelabzuser"
     };
-    addComment(commentData)(firebase, firestore, dispatch);
+    let x = await addComment(commentData)(firebase, firestore, dispatch);
+    console.log("new id ", x);
+    // console.log(comments.length)
+    setComments(prevComments => [...prevComments, x]);
   };
 
   useEffect(() => {
-    setComments(commentsArray?.slice(0, currCommentCount));
+    setComments(commentsArray===undefined?[]:commentsArray?.slice(0, currCommentCount));
+    console.log("commentsarray",commentsArray);
   }, [currCommentCount, commentsArray]);
 
   console.log(commentsArray, comments, currCommentCount);
