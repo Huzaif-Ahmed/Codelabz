@@ -21,6 +21,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase, useFirestore } from "react-redux-firebase";
 import { getUserProfileData } from "../../store/actions";
+import { addTutorialLike,setTutorialLikeStatus,getTutorialLikeStatus } from "../../store/actions";
+import { set } from "lodash";
 const useStyles = makeStyles(theme => ({
   root: {
     margin: "0.5rem",
@@ -68,16 +70,55 @@ const useStyles = makeStyles(theme => ({
 export default function CardWithoutPicture({ tutorial }) {
   const classes = useStyles();
   const [alignment, setAlignment] = React.useState("left");
-  const [count, setCount] = useState(1);
+  const [count, setcount] = useState(1);
   const dispatch = useDispatch();
   const firebase = useFirebase();
   const firestore = useFirestore();
-  const handleIncrement = () => {
-    setCount(count + 1);
+  const [likestatus, setLikeStatus] = useState(0);
+  
+
+  const handleIncrement = async () => {
+    if(likestatus==0){
+      setLikeStatus(n=>n+1);
+      setcount(count=>count + 1);
+      await setTutorialLikeStatus(tutorial.tutorial_id,firebase.auth().currentUser.uid,1)(firebase, firestore, dispatch);
+      await addTutorialLike(tutorial.tutorial_id,1,0)(firebase, firestore, dispatch);
+    }
+    else if(likestatus==-1){
+      setLikeStatus(n=>n+2);
+      setcount(count=>count + 2);
+      await setTutorialLikeStatus(tutorial.tutorial_id,firebase.auth().currentUser.uid,1)(firebase, firestore, dispatch);
+      await addTutorialLike(tutorial.tutorial_id,1,-1)(firebase, firestore, dispatch);
+    }
+    else{
+      setLikeStatus(n=>n-1);
+      setcount(count=>count - 1);
+      await setTutorialLikeStatus(tutorial.tutorial_id,firebase.auth().currentUser.uid,0)(firebase, firestore, dispatch);
+      await addTutorialLike(tutorial.tutorial_id,-1,0)(firebase, firestore, dispatch);
+    }
   };
 
-  const handleDecrement = () => {
-    setCount(count - 1);
+  
+  const handleDecrement = async () => {
+    const userId = firebase.auth().currentUser.uid;
+    const tutorialId = tutorial.tutorial_id;
+
+    if (likestatus === 0) {
+      setLikeStatus(n=>n-1);
+      setcount(count=>count - 1);
+      await setTutorialLikeStatus(tutorialId, userId, -1)(firebase, firestore, dispatch);
+      await addTutorialLike(tutorialId, 0, 1)(firebase, firestore, dispatch);
+    } else if (likestatus === 1) {
+      setLikeStatus(n=>n-2);
+      setcount(count=>count - 2);
+      await setTutorialLikeStatus(tutorialId, userId, -1)(firebase, firestore, dispatch);
+      await addTutorialLike(tutorialId, -1, 1)(firebase, firestore, dispatch);
+    } else {
+      setLikeStatus(n=>n+1);
+      setcount(count=>count + 1);
+      await setTutorialLikeStatus(tutorialId, userId, 0)(firebase, firestore, dispatch);
+      await addTutorialLike(tutorialId, 0, -1)(firebase, firestore, dispatch);
+    }
   };
 
   const handleAlignment = (event, newAlignment) => {
@@ -86,6 +127,16 @@ export default function CardWithoutPicture({ tutorial }) {
 
   useEffect(() => {
     getUserProfileData(tutorial?.created_by)(firebase, firestore, dispatch);
+    const fetchLikeStatusAndCount = async () => {
+      const likeStatus = await getTutorialLikeStatus(tutorial.tutorial_id, firebase.auth().currentUser.uid)(firebase, firestore);
+      setLikeStatus(likeStatus);
+      console.log("likestatus",likeStatus);
+      
+      
+    };
+    fetchLikeStatusAndCount();
+    setcount(tutorial?.upvotes-tutorial?.downvotes)
+    
   }, [tutorial]);
 
   const user = useSelector(
@@ -95,6 +146,10 @@ export default function CardWithoutPicture({ tutorial }) {
       }
     }) => data
   );
+  console.log("user",user?.photoURL)
+
+  const data=useSelector(state=>state)
+  console.log(data)  
 
   const getTime = timestamp => {
     return timestamp.toDate().toDateString();
