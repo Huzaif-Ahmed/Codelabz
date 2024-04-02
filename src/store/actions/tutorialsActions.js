@@ -144,7 +144,9 @@ export const createTutorial =
           background_color: "#ffffff",
           text_color: "#000000",
           createdAt: firestore.FieldValue.serverTimestamp(),
-          updatedAt: firestore.FieldValue.serverTimestamp()
+          updatedAt: firestore.FieldValue.serverTimestamp(),
+          upvotes:0,
+          downvotes:0
         });
 
         // Adds first step when a tutorial is created
@@ -531,3 +533,60 @@ export const setTutorialTheme =
         console.log(e.message);
       }
     };
+
+// export const getTutorialLikes=(tutorial_id)=>async(firestore,dispatch)=>{
+//   try{
+//     dispatch({type:actions.GET_TUTORIAL_LIKES_START})
+//     const tutorialDoc=await firestore.collection("tutorials").doc(tutorial_id).get();
+//     dispatch({type:actions.GET_TUTORIAL_LIKES_SUCCESS,payload:tutorialDoc.data()})
+//   }catch(e){
+//     dispatch({type:actions.GET_TUTORIAL_LIKES_FAIL,payload:e.message})
+//   }
+// }
+
+export const addTutorialLike = (id, upvote, downvote) => async (firebase, firestore, dispatch) => {
+  try {
+    await firestore.collection("tutorials").doc(id).update({
+      upvotes: firebase.firestore.FieldValue.increment(upvote),
+      downvotes: firebase.firestore.FieldValue.increment(downvote)
+    });
+  } catch (error) { // Added error parameter
+    console.log("Cannot add like", error);
+  }
+};
+
+export const getTutorialLikeStatus = (tutorial_id, user_id) => async (firebase, firestore) => {
+  try {
+    const tutorialStatusDoc = await firestore.collection('tutorial_likes').doc(`${tutorial_id}_${user_id}`).get();
+    if (tutorialStatusDoc.exists) {
+      const { like_status } = tutorialStatusDoc.data();
+      return like_status;
+    } else {
+      return 0;
+    }
+  } catch (error) { 
+    console.log("Unable to fetch tutorial status", error);
+  }
+};
+
+export const setTutorialLikeStatus = (tutorialId, userId, status) => async (firebase, firestore) => {
+  try {
+    const tutorialStatus = await firestore.collection("tutorial_likes").doc(`${tutorialId}_${userId}`).get();
+    if (tutorialStatus.exists) {
+      await firestore.collection("tutorial_likes").doc(`${tutorialId}_${userId}`).update({ 
+        like_status: status,
+      });
+    } else {
+      await firestore.collection("tutorial_likes").doc(`${tutorialId}_${userId}`).set({ 
+        tutorial_id: tutorialId,
+        user_id: userId,
+        like_status: status,
+      });
+    }
+  } catch (error) { 
+    console.log("Unable to set tutorial like status", error);
+  }
+};
+
+
+
